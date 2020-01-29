@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+
+
+
     <attr name="min_value" format="integer" />
     <attr name="max_value" format="integer" />
 
@@ -47,5 +51,10 @@
 
         <!-- Color of the top notch -->
         <attr name="notch_color" />
+
+
+        <!--Label for Ruler Left-->
+        <attr name="label" format="string"/>
+
     </declare-styleable>
 </resources>

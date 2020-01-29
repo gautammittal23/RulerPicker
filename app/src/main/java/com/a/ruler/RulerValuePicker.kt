@@ -2,13 +2,12 @@ package com.a.ruler
 
 import android.annotation.TargetApi
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.*
+import android.graphics.Paint.Align
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +16,14 @@ import android.widget.LinearLayout
 import androidx.annotation.*
 import androidx.core.content.ContextCompat
 
+
 class RulerValuePicker : FrameLayout, ObservableHorizontalScrollView.ScrollChangedListener {
+
+    companion object{
+       lateinit var  label:String
+    }
+
+
     /**
      * Left side empty view to add padding to the ruler.
      */
@@ -43,8 +49,8 @@ class RulerValuePicker : FrameLayout, ObservableHorizontalScrollView.ScrollChang
     @Nullable
     private var mListener: RulerValuePickerListener? = null
     private var mNotchPaint: Paint? = null
-    private var mNotchPath: Path? = null
     private var mNotchColor: Int = Color.WHITE
+
 
     /**
      * Public constructor.
@@ -159,6 +165,12 @@ class RulerValuePicker : FrameLayout, ObservableHorizontalScrollView.ScrollChang
                         a.getInteger(R.styleable.RulerValuePicker_max_value, 100)
                     )
                 }
+
+                if(a.hasValue((R.styleable.RulerValuePicker_label)))
+                {
+
+                   label= a.getString(R.styleable.RulerValuePicker_label)!!
+                }
             } finally {
                 a.recycle()
             }
@@ -166,8 +178,8 @@ class RulerValuePicker : FrameLayout, ObservableHorizontalScrollView.ScrollChang
         //Prepare the notch color.
         mNotchPaint = Paint()
         prepareNotchPaint()
-        mNotchPath = Path()
     }
+
 
     /**
      * Create the paint for notch. This will
@@ -175,7 +187,12 @@ class RulerValuePicker : FrameLayout, ObservableHorizontalScrollView.ScrollChang
     private fun prepareNotchPaint() {
         mNotchPaint!!.setColor(mNotchColor)
         mNotchPaint!!.setStrokeWidth(5f)
-        mNotchPaint!!.setStyle(Paint.Style.FILL_AND_STROKE)
+        mNotchPaint!!.textAlign = Paint.Align.CENTER
+        mNotchPaint!!.setStyle(Paint.Style.FILL)
+
+//        mNotchPaint!!.textSize= RulerViewUtils.sp2px(context, 20f).toFloat()
+//        mNotchPaint!!.setTypeface(Typeface.DEFAULT_BOLD)
+
     }
 
     /**
@@ -213,10 +230,85 @@ class RulerValuePicker : FrameLayout, ObservableHorizontalScrollView.ScrollChang
         addView(mHorizontalScrollView)
     }
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        //Draw the top notch
-        canvas.drawPath(mNotchPath!!, mNotchPaint!!)
+    /*  override fun onDraw(canvas: Canvas) {
+          super.onDraw(canvas)
+
+
+      }*/
+
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+        // Draw the Line
+        canvas.drawLine(
+            width / 2f, height.toFloat(),
+            width / 2f, height/2f + 80, mNotchPaint!!
+        )
+        //  canvas.drawText(currentValue.toString(),width/2f,138f,mNotchPaint!!)
+
+
+        // Draw Rectangleg
+        val paintRecWhite = Paint()
+        paintRecWhite.style = Paint.Style.FILL
+        paintRecWhite.color = Color.WHITE
+//        paintRecWhite.setXfermode( PorterDuffXfermode(PorterDuff.Mode.ADD));
+        paintRecWhite.alpha = 255
+
+
+        val textPaint = TextPaint()
+        textPaint.color = Color.BLACK
+        textPaint.textSize = RulerViewUtils.sp2px(context, 20f).toFloat()
+        textPaint.setTypeface(Typeface.DEFAULT_BOLD)
+        textPaint.textAlign = Align.CENTER
+        val textHeight = textPaint.descent() - textPaint.ascent()
+        val textOffset = textHeight / 2 - textPaint.descent()
+        canvas.drawRect(width / 2f + 50, 70f, width / 2f - 50, height/2f+60,paintRecWhite)
+        canvas.drawText(currentValue.toString(), width / 2f, height/2f+50, textPaint)
+
+        // Label Text
+
+
+        canvas.drawText(label, 120f, 80f, textPaint)
+
+    }
+
+
+    fun RoundedRect(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        rx: Float,
+        ry: Float,
+        conformToOriginalPost: Boolean
+    ): Path? {
+        var rx = rx
+        var ry = ry
+        val path = Path()
+        if (rx < 0) rx = 0f
+        if (ry < 0) ry = 0f
+        val width = right - left
+        val height = bottom - top
+        if (rx > width / 2) rx = width / 2
+        if (ry > height / 2) ry = height / 2
+        val widthMinusCorners = width - 2 * rx
+        val heightMinusCorners = height - 2 * ry
+        path.moveTo(right, top + ry)
+        path.rQuadTo(0F, -ry, -rx, -ry) //top-right corner
+        path.rLineTo(-widthMinusCorners, 0F)
+        path.rQuadTo(-rx, 0F, -rx, ry) //top-left corner
+        path.rLineTo(0F, heightMinusCorners)
+        if (conformToOriginalPost) {
+            path.rLineTo(0F, ry)
+            path.rLineTo(width, 0F)
+            path.rLineTo(0F, -ry)
+        } else {
+            path.rQuadTo(0F, ry, rx, ry) //bottom-left corner
+            path.rLineTo(widthMinusCorners, 0F)
+            path.rQuadTo(rx, 0F, rx, -ry) //bottom-right corner
+        }
+        path.rLineTo(0F, -heightMinusCorners)
+        path.close() //Given close, last lineto can be removed.
+        return path
     }
 
     override fun onLayout(isChanged: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -231,7 +323,6 @@ class RulerValuePicker : FrameLayout, ObservableHorizontalScrollView.ScrollChang
             val rightParams: ViewGroup.LayoutParams = mRightSpacer!!.getLayoutParams()
             rightParams.width = width / 2
             mRightSpacer!!.setLayoutParams(rightParams)
-            calculateNotchPath()
             invalidate()
         }
     }
@@ -241,12 +332,7 @@ class RulerValuePicker : FrameLayout, ObservableHorizontalScrollView.ScrollChang
      *
      * @see .mNotchPath
      */
-    private fun calculateNotchPath() {
-        mNotchPath!!.reset()
-        mNotchPath!!.moveTo(width / 2f - 30f, 0f)
-        mNotchPath!!.lineTo(width / 2f, 40f)
-        mNotchPath!!.lineTo(width / 2f + 30, 0f)
-    }
+
 
     /**
      * Scroll the ruler to the given value.

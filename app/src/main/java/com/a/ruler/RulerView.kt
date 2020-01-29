@@ -87,7 +87,7 @@ class RulerView : View {
      * @see .getLongIndicatorHeightRatio
      */
     @get:CheckResult
-    var longIndicatorHeightRatio = 0.6f /* Default value */
+    var longIndicatorHeightRatio = 0.2f /* Default value */
         private set
     /**
      * @return Ratio of short indicator height to the ruler height.
@@ -103,7 +103,7 @@ class RulerView : View {
      * @see .getShortIndicatorHeightRatio
      */
     @get:CheckResult
-    var shortIndicatorHeightRatio = 0.4f /* Default value */
+    var shortIndicatorHeightRatio = 0.09f /* Default value */
         private set
     /**
      * Actual height of the long indicator in pixels. This height is derived from
@@ -126,7 +126,7 @@ class RulerView : View {
      * @see .getTextColor
      */
     @ColorInt
-    private var mTextColor = Color.WHITE
+    private var mTextColor = Color.BLACK
     /**
      * Integer color of the indicators.
      *
@@ -134,7 +134,7 @@ class RulerView : View {
      * @see .getIndicatorColor
      */
     @ColorInt
-    private var mIndicatorColor = Color.WHITE
+    private var mIndicatorColor = Color.GRAY
     /**
      * Height of the text, that is displayed on ruler in pixels.
      *
@@ -318,9 +318,9 @@ class RulerView : View {
         value: Int
     ) {
         canvas.drawLine(
-            indicatorIntervalWidth * value.toFloat(), 0f,
+            indicatorIntervalWidth * value.toFloat(), height.toFloat(),
             indicatorIntervalWidth * value.toFloat(),
-            mShortIndicatorHeight.toFloat(),
+            height/2f+120,
             mIndicatorPaint!!
         )
     }
@@ -336,9 +336,9 @@ class RulerView : View {
         value: Int
     ) {
         canvas.drawLine(
-            indicatorIntervalWidth * value.toFloat(), 0f,
+            indicatorIntervalWidth * value.toFloat(), height.toFloat(),
             indicatorIntervalWidth * value.toFloat(),
-            mLongIndicatorHeight.toFloat(),
+            height/2f+100,
             mIndicatorPaint!!
         )
     }
@@ -357,7 +357,7 @@ class RulerView : View {
         canvas.drawText(
             (value + minValue).toString(),
             indicatorIntervalWidth * value.toFloat(),
-            mLongIndicatorHeight + mTextPaint!!.textSize,
+            height/2f + mTextPaint!!.textSize,
             mTextPaint!!
         )
     }
